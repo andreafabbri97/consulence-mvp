@@ -452,34 +452,37 @@ export default function HomePage() {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-3">
-          {/* Language switcher */}
+        <div className="flex flex-col items-end gap-2">
+          {/* Language switcher — sopra i pulsanti */}
           <div className="flex gap-1">
             <button
               title="Italiano"
               onClick={() => { setLang('it'); try { localStorage.setItem('advisor_lang', 'it'); } catch {} }}
-              className={`text-xl leading-none rounded-md px-1 py-0.5 transition ${lang === 'it' ? 'ring-2 ring-white' : 'opacity-60 hover:opacity-100'}`}
+              className={`text-2xl leading-none rounded-lg px-1.5 py-0.5 transition ${lang === 'it' ? 'ring-2 ring-white scale-110' : 'opacity-50 hover:opacity-90'}`}
             >🇮🇹</button>
             <button
               title="English"
               onClick={() => { setLang('en'); try { localStorage.setItem('advisor_lang', 'en'); } catch {} }}
-              className={`text-xl leading-none rounded-md px-1 py-0.5 transition ${lang === 'en' ? 'ring-2 ring-white' : 'opacity-60 hover:opacity-100'}`}
+              className={`text-2xl leading-none rounded-lg px-1.5 py-0.5 transition ${lang === 'en' ? 'ring-2 ring-white scale-110' : 'opacity-50 hover:opacity-90'}`}
             >🇬🇧</button>
           </div>
-          <button
-            onClick={() => void bootstrap()}
-            className="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/30"
-          >
-            {t.refreshBtn}
-          </button>
-          <button
-            onClick={() => { console.debug('Copilot click'); void handleRunCopilot(); }}
-            disabled={copilotLoading}
-            className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-100 disabled:opacity-60 shadow-sm"
-            style={{ border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer' }}
-          >
-            {copilotLoading ? t.copilotLoadingBtn : t.copilotBtn}
-          </button>
+          {/* Action buttons — sotto le bandiere */}
+          <div className="flex gap-3">
+            <button
+              onClick={() => void bootstrap()}
+              className="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/30"
+            >
+              {t.refreshBtn}
+            </button>
+            <button
+              onClick={() => { console.debug('Copilot click'); void handleRunCopilot(); }}
+              disabled={copilotLoading}
+              className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-100 disabled:opacity-60 shadow-sm"
+              style={{ border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer' }}
+            >
+              {copilotLoading ? t.copilotLoadingBtn : t.copilotBtn}
+            </button>
+          </div>
         </div>
       </header>
 
