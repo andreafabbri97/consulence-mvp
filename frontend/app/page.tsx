@@ -458,13 +458,17 @@ export default function HomePage() {
             <button
               title="Italiano"
               onClick={() => { setLang('it'); try { localStorage.setItem('advisor_lang', 'it'); } catch {} }}
-              className={`text-2xl leading-none rounded-lg px-1.5 py-0.5 transition ${lang === 'it' ? 'ring-2 ring-white scale-110' : 'opacity-50 hover:opacity-90'}`}
-            >🇮🇹</button>
+              className={`rounded-lg p-0.5 transition ${lang === 'it' ? 'ring-2 ring-white scale-110' : 'opacity-50 hover:opacity-90'}`}
+            >
+              <img src="https://flagcdn.com/h24/it.png" srcSet="https://flagcdn.com/h48/it.png 2x" height="24" alt="Italiano" className="rounded-sm" />
+            </button>
             <button
               title="English"
               onClick={() => { setLang('en'); try { localStorage.setItem('advisor_lang', 'en'); } catch {} }}
-              className={`text-2xl leading-none rounded-lg px-1.5 py-0.5 transition ${lang === 'en' ? 'ring-2 ring-white scale-110' : 'opacity-50 hover:opacity-90'}`}
-            >🇬🇧</button>
+              className={`rounded-lg p-0.5 transition ${lang === 'en' ? 'ring-2 ring-white scale-110' : 'opacity-50 hover:opacity-90'}`}
+            >
+              <img src="https://flagcdn.com/h24/gb.png" srcSet="https://flagcdn.com/h48/gb.png 2x" height="24" alt="English" className="rounded-sm" />
+            </button>
           </div>
           {/* Action buttons — sotto le bandiere */}
           <div className="flex gap-3">

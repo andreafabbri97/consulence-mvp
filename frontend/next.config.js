@@ -7,7 +7,7 @@ const nextConfig = {
     ? {
         output: 'export',
         basePath: '/consulence-mvp',
-        images: { unoptimized: true },
+        images: { unoptimized: true, domains: ['flagcdn.com'] },
       }
     : {
         experimental: { typedRoutes: true },
