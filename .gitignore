@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.env
+.venv
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+.next/
+out/
+.vercel/
+backend/advisor.db
+
+# OS
+.DS_Store
+Thumbs.db

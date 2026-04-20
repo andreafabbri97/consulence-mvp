@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Advisor MVP - Test rapido</title>
+    <style>
+      body{font-family:Inter,Segoe UI,Arial;margin:24px;background:#f7fafc;color:#0f172a}
+      h1{font-size:20px}
+      pre{background:#0b1220;color:#cfe8ff;padding:12px;border-radius:8px}
+      section{margin-bottom:18px;background:#fff;padding:16px;border-radius:10px;box-shadow:0 1px 0 rgba(2,6,23,0.06)}
+      button{padding:8px 12px;border-radius:6px;border:1px solid #d1d5db;background:#1f6feb;color:#fff}
+      input,textarea{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:1px solid #e6edf3}
+    </style>
+  </head>
+  <body>
+    <h1>Advisor MVP — Test rapido</h1>
+    <p>Backend: <a href="/health" target="_blank">/health</a> — UI test qui sotto.</p>
+
+    <section>
+      <h2>KPI</h2>
+      <div id="kpis">caricamento...</div>
+    </section>
+
+    <section>
+      <h2>Insights</h2>
+      <div id="insights">caricamento...</div>
+    </section>
+
+    <section>
+      <h2>Note consulente</h2>
+      <div id="notes">caricamento...</div>
+      <h3>Aggiungi nota</h3>
+      <input id="note-author" placeholder="autore (es. consulente@firm.it)" value="tester@local" />
+      <textarea id="note-content" rows="3" placeholder="contenuto"></textarea>
+      <button id="add-note">Aggiungi</button>
+    </section>
+
+    <section>
+      <h2>Copilot (LLM)</h2>
+      <input id="llm-focus" placeholder="es. Ridurre CAC" value="Ridurre CAC" />
+      <button id="run-llm">Esegui</button>
+      <div id="llm-output"></div>
+    </section>
+
+    <pre id="raw"></pre>
+
+    <script>
+      const API = 'http://localhost:8000';
+      const TENANT = 'acme';
+
+      async function loadKpis(){
+        const res = await fetch(`${API}/tenants/${TENANT}/kpis`);
+        const data = await res.json();
+        const el = document.getElementById('kpis');
+        el.innerHTML = data.map(k => `<div><strong>${k.name}</strong>: ${k.value} ${k.unit} — status: ${k.status}</div>`).join('');
+      }
+      async function loadInsights(){
+        const res = await fetch(`${API}/tenants/${TENANT}/insights`);
+        const data = await res.json();
+        document.getElementById('insights').innerHTML = data.map(i=>`<div><strong>${i.title}</strong><div>${i.summary}</div></div>`).join('');
+      }
+      async function loadNotes(){
+        const res = await fetch(`${API}/consultant/notes?tenant_id=${TENANT}`);
+        const data = await res.json();
+        document.getElementById('notes').innerHTML = data.map(n=>`<div><em>${n.author}</em> — ${new Date(n.created_at).toLocaleString()}<div>${n.content}</div></div>`).join('');
+      }
+      async function addNote(){
+        const author = document.getElementById('note-author').value;
+        const content = document.getElementById('note-content').value;
+        const res = await fetch(`${API}/consultant/notes`, {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({tenant_id:TENANT,author,content})});
+        const note = await res.json();
+        document.getElementById('note-content').value = '';
+        await loadNotes();
+        document.getElementById('raw').textContent = JSON.stringify(note, null, 2);
+      }
+      async function runLLM(){
+        const focus = document.getElementById('llm-focus').value;
+        const res = await fetch(`${API}/llm/session`, {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({tenant_id:TENANT,focus_area:focus})});
+        const run = await res.json();
+        const out = document.getElementById('llm-output');
+        out.innerHTML = run.steps.map(s=>`<div style="padding:8px;border-radius:6px;border:1px solid #eee;margin-top:8px"><strong>${s.name}</strong><div>${s.output}</div></div>`).join('');
+        document.getElementById('raw').textContent = JSON.stringify(run, null, 2);
+      }
+
+      document.getElementById('add-note').onclick = addNote;
+      document.getElementById('run-llm').onclick = runLLM;
+
+      loadKpis(); loadInsights(); loadNotes();
+    </script>
+  </body>
+</html>
