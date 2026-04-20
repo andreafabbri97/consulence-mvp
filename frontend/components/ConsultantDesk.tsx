@@ -1,8 +1,8 @@
 "use client";
 
 import { FormEvent, ChangeEvent, useState } from "react";
-
 import { ConsultantNote } from "@/lib/types";
+import { useLang } from "@/lib/i18n";
 
 interface Props {
   notes: ConsultantNote[];
@@ -10,6 +10,7 @@ interface Props {
 }
 
 export function ConsultantDesk({ notes, onAdd }: Props) {
+  const t = useLang();
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -25,14 +26,14 @@ export function ConsultantDesk({ notes, onAdd }: Props) {
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-slate-900">Desk Consulente</h3>
-        <p className="text-sm text-slate-500">Note private e workflow</p>
+        <h3 className="text-lg font-semibold text-slate-900">{t.deskTitle}</h3>
+        <p className="text-sm text-slate-500">{t.deskSubtitle}</p>
       </div>
       <form onSubmit={handleSubmit} className="mt-4 space-y-3">
         <textarea
           className="w-full rounded-2xl border border-slate-200 p-3 text-sm focus:border-brand-500 focus:outline-none"
           rows={3}
-          placeholder="Aggiungi insight o to-do..."
+          placeholder={t.deskPlaceholder}
           value={content}
           onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value)}
         />
@@ -41,7 +42,7 @@ export function ConsultantDesk({ notes, onAdd }: Props) {
           disabled={loading}
           className="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-500 disabled:opacity-60"
         >
-          {loading ? "Salvataggio..." : "Salva nota"}
+          {loading ? t.deskSavingBtn : t.deskSaveBtn}
         </button>
       </form>
       <div className="mt-4 space-y-3">
@@ -53,7 +54,7 @@ export function ConsultantDesk({ notes, onAdd }: Props) {
             <p className="mt-1 text-sm text-slate-700">{note.content}</p>
           </article>
         ))}
-        {!notes.length && <p className="text-sm text-slate-500">Ancora nessuna nota salvata.</p>}
+        {!notes.length && <p className="text-sm text-slate-500">{t.noNotes}</p>}
       </div>
     </div>
   );

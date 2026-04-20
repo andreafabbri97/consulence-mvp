@@ -1,8 +1,10 @@
 import { Recommendation } from "@/lib/types";
+import { useLang } from "@/lib/i18n";
 
 export function RecommendationList({ items, onAccept, onDetails }: { items: Recommendation[]; onAccept?: (id: string) => void; onDetails?: (rec: Recommendation) => void }) {
+  const t = useLang();
   if (!items.length) {
-    return <p className="text-sm text-slate-500">Nessuna raccomandazione attiva.</p>;
+    return <p className="text-sm text-slate-500">{t.noRecs}</p>;
   }
 
   return (
@@ -21,10 +23,10 @@ export function RecommendationList({ items, onAccept, onDetails }: { items: Reco
           <div className="mt-3 flex gap-2">
             {rec.status === 'proposed' && (
               <button className="rounded-md bg-emerald-500 px-3 py-1 text-xs font-semibold text-white" onClick={() => onAccept && onAccept(rec.id)}>
-                Accetta
+                {t.acceptBtn}
               </button>
             )}
-            <button className="rounded-md bg-white/50 px-3 py-1 text-xs text-slate-600" onClick={() => onDetails && onDetails(rec)}>Dettagli</button>
+            <button className="rounded-md bg-white/50 px-3 py-1 text-xs text-slate-600" onClick={() => onDetails && onDetails(rec)}>{t.detailsBtn}</button>
           </div>
         </li>
       ))}

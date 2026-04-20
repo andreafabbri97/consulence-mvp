@@ -1,4 +1,5 @@
 import { KPI } from "@/lib/types";
+import { useLang } from "@/lib/i18n";
 import classNames from "classnames";
 
 const statusToColor: Record<KPI["status"], string> = {
@@ -8,20 +9,20 @@ const statusToColor: Record<KPI["status"], string> = {
 };
 
 export function KpiCard({ kpi }: { kpi: KPI }) {
-  // compute a short explanation for the current status (same heuristic used in backend)
+  const t = useLang();
   const ratio = kpi.target ? kpi.value / kpi.target : 1;
   const trendPct = (kpi.trend || 0) * 100;
   let reason = '';
   if (kpi.value >= kpi.target) {
-    reason = 'Valore >= target — KPI dentro obiettivo.';
+    reason = t.kpiReasonAboveTarget;
   } else {
-    if (ratio >= 0.95) reason = 'Sotto target, ma vicino all\'obiettivo.';
-    else reason = 'Sotto target — possibile area critica.';
+    if (ratio >= 0.95) reason = t.kpiReasonNearTarget;
+    else reason = t.kpiReasonBelowTarget;
   }
   if (trendPct < -5) {
-    reason += ` Trend negativo significativo (${trendPct.toFixed(1)}%).`;
+    reason += ` ${t.kpiReasonNegTrend} (${trendPct.toFixed(1)}%).`;
   } else if (trendPct > 5) {
-    reason += ` Trend positivo (${trendPct.toFixed(1)}%).`;
+    reason += ` ${t.kpiReasonPosTrend} (${trendPct.toFixed(1)}%).`;
   }
 
   return (
@@ -42,12 +43,12 @@ export function KpiCard({ kpi }: { kpi: KPI }) {
           {kpi.unit}
           {kpi.value.toLocaleString("it-IT")}
         </span>
-        <span className="text-sm text-slate-500">target {kpi.target.toLocaleString("it-IT")}</span>
+        <span className="text-sm text-slate-500">{t.kpiTarget} {kpi.target.toLocaleString("it-IT")}</span>
       </div>
       <div className="mt-4 flex items-center justify-between text-sm">
         <span className={kpi.trend >= 0 ? "text-emerald-600" : "text-rose-600"}>
           {kpi.trend >= 0 ? "+" : ""}
-          {(kpi.trend * 100).toFixed(1)}% vs periodo precedente
+          {(kpi.trend * 100).toFixed(1)}% {t.kpiVsPrev}
         </span>
         <span className="text-slate-500">{kpi.period}</span>
       </div>

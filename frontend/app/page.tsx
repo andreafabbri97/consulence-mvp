@@ -7,6 +7,7 @@ import { ConsultantDesk } from '@/components/ConsultantDesk';
 import { InsightList } from '@/components/InsightList';
 import { KpiCard } from '@/components/KpiCard';
 import { RecommendationList } from '@/components/RecommendationList';
+import { Lang, LangContext, translations } from '@/lib/i18n';
 import {
   createNote,
   fetchActionPlans,
@@ -81,6 +82,12 @@ export default function HomePage() {
   const [newTenantName, setNewTenantName] = useState<string>('');
   const [editingTenant, setEditingTenant] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string>('');
+
+  // Language state
+  const [lang, setLang] = useState<Lang>(() => {
+    try { return (localStorage.getItem('advisor_lang') as Lang) || 'it'; } catch { return 'it'; }
+  });
+  const t = translations[lang];
 
   const CONSULTANT_EMAIL = 'consulente@firm.it';
 
@@ -352,11 +359,12 @@ export default function HomePage() {
   }
 
   return (
+    <LangContext.Provider value={t}>
     <main className="mx-auto max-w-6xl space-y-8 px-6 py-10">
       <header className="flex flex-col gap-4 rounded-3xl bg-gradient-to-r from-brand-600 to-brand-900 p-8 text-white lg:flex-row lg:items-center lg:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <p className="text-sm uppercase tracking-widest text-white/70">Tenant ·</p>
+            <p className="text-sm uppercase tracking-widest text-white/70">{t.tenantLabel}</p>
             <div className="relative">
               <select
                 value={tenantId}
@@ -370,66 +378,66 @@ export default function HomePage() {
               </select>
               <button
                 onClick={() => setShowTenantManager(v => !v)}
-                title="Gestisci tenant"
+                title={t.manageTenantsTitle}
                 className="ml-2 absolute right-[-86px] top-0 rounded-md bg-white/10 px-2 py-1 text-xs text-white/80"
               >
-                Gestisci
+                {t.manageBtn}
               </button>
             </div>
           </div>
-          <h1 className="text-3xl font-semibold">Console di consulenza intelligente</h1>
-          <p className="mt-2 text-white/80">Insight live, automazioni e area privata per il consulente.</p>
+          <h1 className="text-3xl font-semibold">{t.appTitle}</h1>
+          <p className="mt-2 text-white/80">{t.appSubtitle}</p>
 
           {showTenantManager && (
             <div className="fixed inset-0 z-50 flex items-center justify-center">
               <div className="absolute inset-0 bg-black/40" onClick={() => setShowTenantManager(false)} />
               <div className="relative w-[min(90%,520px)] rounded-2xl bg-white p-6 shadow-lg">
                 <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-sm font-semibold text-slate-900">Gestisci tenant</h4>
-                  <button className="text-sm text-slate-500" onClick={() => setShowTenantManager(false)}>Chiudi ✕</button>
+                  <h4 className="text-sm font-semibold text-slate-900">{t.manageTenantsTitle}</h4>
+                  <button className="text-sm text-slate-500" onClick={() => setShowTenantManager(false)}>{t.closeBtn}</button>
                 </div>
 
                 <div className="mb-3 flex gap-2">
-                  <input className="flex-1 rounded-md border px-2 py-1 text-sm text-slate-900 bg-white" placeholder="Nuovo tenant" value={newTenantName} onChange={(e) => setNewTenantName(e.target.value)} />
+                  <input className="flex-1 rounded-md border px-2 py-1 text-sm text-slate-900 bg-white" placeholder={t.newTenantPlaceholder} value={newTenantName} onChange={(e) => setNewTenantName(e.target.value)} />
                   <button className="rounded-md bg-emerald-500 px-3 py-1 text-xs font-semibold text-white" onClick={() => {
                     const name = (newTenantName || '').trim();
-                    if (!name) return setError('Inserisci un nome valido');
-                    if (tenantList.includes(name)) return setError('Tenant già esistente');
+                    if (!name) return setError(t.errInvalidTenantName);
+                    if (tenantList.includes(name)) return setError(t.errTenantExists);
                     const next = [...tenantList, name];
                     setTenantList(next);
                     setTenantId(name);
                     setNewTenantName('');
-                  }}>Aggiungi</button>
+                  }}>{t.addBtn}</button>
                 </div>
 
                 <ul className="space-y-2 max-h-56 overflow-auto">
-                  {tenantList.map(t => (
-                    <li key={t} className="flex items-center justify-between gap-2 border-b pb-2">
-                      {editingTenant === t ? (
+                  {tenantList.map(tnt => (
+                    <li key={tnt} className="flex items-center justify-between gap-2 border-b pb-2">
+                      {editingTenant === tnt ? (
                         <div className="flex gap-2 w-full">
                           <input className="flex-1 rounded-md border px-2 py-1 text-sm text-slate-900" value={editingName} onChange={(e) => setEditingName(e.target.value)} />
                           <button className="text-xs text-emerald-600" onClick={() => {
                             const newName = (editingName || '').trim();
-                            if (!newName) return setError('Nome non valido');
-                            if (tenantList.includes(newName) && newName !== t) return setError('Nome già esistente');
-                            setTenantList(tenantList.map(x => x === t ? newName : x));
-                            if (tenantId === t) setTenantId(newName);
+                            if (!newName) return setError(t.errNameInvalid);
+                            if (tenantList.includes(newName) && newName !== tnt) return setError(t.errNameExists);
+                            setTenantList(tenantList.map(x => x === tnt ? newName : x));
+                            if (tenantId === tnt) setTenantId(newName);
                             setEditingTenant(null);
-                          }}>Salva</button>
-                          <button className="text-xs text-slate-400" onClick={() => setEditingTenant(null)}>Annulla</button>
+                          }}>{t.saveBtn}</button>
+                          <button className="text-xs text-slate-400" onClick={() => setEditingTenant(null)}>{t.cancelBtn}</button>
                         </div>
                       ) : (
                         <div className="flex items-center gap-3 w-full">
                           <div className="flex-1">
-                            <span className={(t === tenantId ? 'font-semibold ' : '') + 'text-slate-900'}>{t}</span>
+                            <span className={(tnt === tenantId ? 'font-semibold ' : '') + 'text-slate-900'}>{tnt}</span>
                           </div>
                           <div className="flex gap-2">
-                            <button className="text-xs text-slate-600" onClick={() => { setEditingTenant(t); setEditingName(t); }}>Modifica</button>
+                            <button className="text-xs text-slate-600" onClick={() => { setEditingTenant(tnt); setEditingName(tnt); }}>{t.editBtn}</button>
                             <button className="text-xs text-rose-500" onClick={() => {
-                              const next = tenantList.filter(x => x !== t);
+                              const next = tenantList.filter(x => x !== tnt);
                               setTenantList(next);
-                              if (tenantId === t) setTenantId(next[0] || '');
-                            }}>Elimina</button>
+                              if (tenantId === tnt) setTenantId(next[0] || '');
+                            }}>{t.deleteBtn}</button>
                           </div>
                         </div>
                       )}
@@ -438,18 +446,31 @@ export default function HomePage() {
                 </ul>
 
                 <div className="mt-4 flex justify-end gap-2">
-                  <button className="rounded-md px-3 py-1 text-sm" onClick={() => setShowTenantManager(false)}>Chiudi</button>
+                  <button className="rounded-md px-3 py-1 text-sm" onClick={() => setShowTenantManager(false)}>{t.closeBtn}</button>
                 </div>
               </div>
             </div>
           )}
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3">
+          {/* Language switcher */}
+          <div className="flex gap-1">
+            <button
+              title="Italiano"
+              onClick={() => { setLang('it'); try { localStorage.setItem('advisor_lang', 'it'); } catch {} }}
+              className={`text-xl leading-none rounded-md px-1 py-0.5 transition ${lang === 'it' ? 'ring-2 ring-white' : 'opacity-60 hover:opacity-100'}`}
+            >🇮🇹</button>
+            <button
+              title="English"
+              onClick={() => { setLang('en'); try { localStorage.setItem('advisor_lang', 'en'); } catch {} }}
+              className={`text-xl leading-none rounded-md px-1 py-0.5 transition ${lang === 'en' ? 'ring-2 ring-white' : 'opacity-60 hover:opacity-100'}`}
+            >🇬🇧</button>
+          </div>
           <button
             onClick={() => void bootstrap()}
             className="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/30"
           >
-            Aggiorna dati
+            {t.refreshBtn}
           </button>
           <button
             onClick={() => { console.debug('Copilot click'); void handleRunCopilot(); }}
@@ -457,7 +478,7 @@ export default function HomePage() {
             className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-100 disabled:opacity-60 shadow-sm"
             style={{ border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer' }}
           >
-            {copilotLoading ? 'Copilot in corso...' : 'Chiedi al Copilot'}
+            {copilotLoading ? t.copilotLoadingBtn : t.copilotBtn}
           </button>
         </div>
       </header>
@@ -467,7 +488,7 @@ export default function HomePage() {
         <div className="rounded-full bg-slate-50 px-3 py-1 text-xs border">API: <span className="font-mono">{diagApi}</span></div>
         <div className="rounded-full bg-slate-50 px-3 py-1 text-xs border">Health: <strong className="ml-1">{diagHealth}</strong></div>
         <div className="rounded-full bg-slate-50 px-3 py-1 text-xs border">KPI items: <strong className="ml-1">{diagKpi}</strong></div>
-        <div className="rounded-full bg-slate-50 px-3 py-1 text-xs border ml-4">Scheduler: <strong className="ml-1">{schedulerRunning ? 'running' : 'stopped'}</strong></div>
+        <div className="rounded-full bg-slate-50 px-3 py-1 text-xs border ml-4">Scheduler: <strong className="ml-1">{schedulerRunning ? t.schedulerRunning : t.schedulerStopped}</strong></div>
         <div className="ml-2 flex gap-2 items-center">
           <button className="text-xs rounded-md bg-white/20 px-2 py-1" onClick={() => void handleSchedulerStart()}>Start</button>
           <button className="text-xs rounded-md bg-white/20 px-2 py-1" onClick={() => void handleSchedulerStop()}>Stop</button>
@@ -479,13 +500,13 @@ export default function HomePage() {
       {error && <p className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-700">{error}</p>}
 
       {loading ? (
-        <p className="text-center text-sm text-slate-500">Caricamento dati...</p>
+        <p className="text-center text-sm text-slate-500">{t.loadingData}</p>
       ) : (
         <div className="space-y-8">
           <section>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">KPI chiave</h2>
-              <span className="text-sm text-slate-500">Ultimo aggiornamento realtime</span>
+              <h2 className="text-lg font-semibold text-slate-900">{t.kpiTitle}</h2>
+              <span className="text-sm text-slate-500">{t.kpiLastUpdate}</span>
             </div>
             <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {kpis.map((kpi) => (
@@ -496,7 +517,7 @@ export default function HomePage() {
             {/* Manual multi-KPI form */}
             <div className="mt-6 rounded-2xl border bg-white p-4">
               <div className="flex items-center gap-3">
-                <h3 className="text-sm font-semibold">Aggiungi KPI manualmente (multipli)</h3>
+                <h3 className="text-sm font-semibold">{t.kpiAddManualTitle}</h3>
                 <button
                   title="Guida inserimento KPI"
                   aria-label="Mostra guida per inserimento KPI"
@@ -506,7 +527,7 @@ export default function HomePage() {
                   ?
                 </button>
               </div>
-              <p className="text-xs text-slate-500 mt-2">Aggiungi più righe e invia tutte insieme. <strong>Lo `status` viene calcolato automaticamente dal sistema</strong> (non inserirlo).</p>
+              <p className="text-xs text-slate-500 mt-2">{t.kpiAddManualDesc}</p>
 
               <div className="mt-3 space-y-2">
                 <div className="flex gap-2 items-center text-xs text-slate-500 mb-2">
@@ -536,15 +557,15 @@ export default function HomePage() {
                       <option value="finance">finance</option>
                       <option value="hr">hr</option>
                     </select>
-                    <button className="text-xs text-rose-600" onClick={() => removeManual(idx)}>Rimuovi</button>
+                    <button className="text-xs text-rose-600" onClick={() => removeManual(idx)}>{t.kpiRemoveRow}</button>
                   </div>
                 ))}
 
                 <div className="flex gap-3 mt-2">
-                  <button className="rounded-full bg-white/20 px-3 py-1 text-sm" onClick={addManualRow}>Aggiungi riga</button>
-                  <button className="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white" onClick={() => void submitManualKpis()} disabled={kpiUploading}>{kpiUploading ? 'Invio...' : 'Invia KPI'}</button>
+                  <button className="rounded-full bg-white/20 px-3 py-1 text-sm" onClick={addManualRow}>{t.kpiAddRow}</button>
+                  <button className="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white" onClick={() => void submitManualKpis()} disabled={kpiUploading}>{kpiUploading ? t.kpiSendingBtn : t.kpiSendBtn}</button>
                 </div>
-                <p className="text-xs text-slate-400 mt-2">Puoi anche usare l'area <em>Importa KPI (bulk)</em> per CSV/XLSX.</p>
+                <p className="text-xs text-slate-400 mt-2">{t.kpiBulkNote}</p>
               </div>
             </div>
 
@@ -555,10 +576,10 @@ export default function HomePage() {
                 <div className="relative w-[min(92%,720px)] max-h-[85vh] overflow-auto overscroll-contain rounded-2xl bg-white p-6 shadow-lg text-slate-900">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <h3 className="text-lg font-semibold">Guida all'inserimento KPI</h3>
-                      <p className="text-sm text-slate-500 mt-1">Consigli e regole per inserire correttamente i KPI nel sistema.</p>
+                      <h3 className="text-lg font-semibold">{t.kpiHelpTitle}</h3>
+                      <p className="text-sm text-slate-500 mt-1">{t.kpiHelpSubtitle}</p>
                     </div>
-                    <button onClick={() => setShowKpiHelp(false)} className="text-sm text-slate-500">Chiudi ✕</button>
+                    <button onClick={() => setShowKpiHelp(false)} className="text-sm text-slate-500">{t.closeBtn}</button>
                   </div>
 
                   <hr className="my-4" />
@@ -629,8 +650,8 @@ export default function HomePage() {
             )}
 
             <div className="mt-6 rounded-2xl border bg-white p-4">
-              <h3 className="text-sm font-semibold">Importa KPI (bulk)</h3>
-              <p className="text-xs text-slate-500 mt-2">Incolla CSV (prima riga headers) oppure carica file CSV / XLSX.</p>
+              <h3 className="text-sm font-semibold">{t.kpiBulkTitle}</h3>
+              <p className="text-xs text-slate-500 mt-2">{t.kpiBulkDesc}</p>
               <textarea
                 value={kpiBulkText}
                 onChange={(e) => setKpiBulkText(e.target.value)}
@@ -649,7 +670,7 @@ export default function HomePage() {
                   disabled={kpiUploading}
                   className="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
                 >
-                  {kpiUploading ? 'Import in corso...' : 'Importa KPI'}
+                  {kpiUploading ? t.kpiImportingBtn : t.kpiImportBtn}
                 </button>
                 <span className="text-xs text-slate-400">{kpiFile ? kpiFile.name : ''}</span>
               </div>
@@ -659,8 +680,8 @@ export default function HomePage() {
           <section className="grid gap-6 lg:grid-cols-2">
             <div>
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-slate-900">Insight AI</h2>
-                <span className="text-xs uppercase text-slate-400">LLM + Algoritmi</span>
+              <h2 className="text-lg font-semibold text-slate-900">{t.insightsTitle}</h2>
+              <span className="text-xs uppercase text-slate-400">{t.insightsSubtitle}</span>
               </div>
               <div className="mt-3">
                 <InsightList insights={insights} />
@@ -668,8 +689,8 @@ export default function HomePage() {
             </div>
             <div>
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-slate-900">Raccomandazioni</h2>
-                <span className="text-xs uppercase text-slate-400">Priorità automatiche</span>
+              <h2 className="text-lg font-semibold text-slate-900">{t.recsTitle}</h2>
+              <span className="text-xs uppercase text-slate-400">{t.recsSubtitle}</span>
               </div>
               <div className="mt-3">
                 <RecommendationList items={recommendations} onAccept={handleAcceptRecommendation} onDetails={(r) => { setSelectedRec(r); setShowRecModal(true); }} />
@@ -681,10 +702,10 @@ export default function HomePage() {
                   <div className="relative w-[min(92%,720px)] rounded-2xl bg-white p-6 shadow-lg text-slate-900">
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <h3 className="text-lg font-semibold">Dettaglio raccomandazione</h3>
-                        <p className="text-sm text-slate-500 mt-1">ID: {selectedRec.id}</p>
+                        <h3 className="text-lg font-semibold">{t.recDetailTitle}</h3>
+                        <p className="text-sm text-slate-500 mt-1">{t.recDetailId} {selectedRec.id}</p>
                       </div>
-                      <button onClick={() => setShowRecModal(false)} className="text-sm text-slate-500">Chiudi ✕</button>
+                      <button onClick={() => setShowRecModal(false)} className="text-sm text-slate-500">{t.closeBtn}</button>
                     </div>
 
                     <hr className="my-4" />
@@ -692,15 +713,15 @@ export default function HomePage() {
                     <p className="text-sm text-slate-600 mt-2">{selectedRec.description}</p>
 
                     <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                      <div><strong>Metric</strong><div className="text-slate-600">{selectedRec.driver_metric_id}</div></div>
-                      <div><strong>Confidence / Impact</strong><div className="text-slate-600">{Math.round(selectedRec.confidence*100)}% / {Math.round(selectedRec.impact_score*100)}%</div></div>
-                      <div><strong>Priority</strong><div className="text-slate-600">{selectedRec.priority}</div></div>
-                      <div><strong>Status</strong><div className="text-slate-600">{selectedRec.status}</div></div>
+                      <div><strong>{t.recMetricLabel}</strong><div className="text-slate-600">{selectedRec.driver_metric_id}</div></div>
+                      <div><strong>{t.recConfidenceLabel}</strong><div className="text-slate-600">{Math.round(selectedRec.confidence*100)}% / {Math.round(selectedRec.impact_score*100)}%</div></div>
+                      <div><strong>{t.recPriorityLabel}</strong><div className="text-slate-600">{selectedRec.priority}</div></div>
+                      <div><strong>{t.recStatusLabel}</strong><div className="text-slate-600">{selectedRec.status}</div></div>
                     </div>
 
                     <div className="mt-6 flex justify-end gap-2">
-                      {selectedRec.status === 'proposed' && <button className="rounded-md bg-emerald-500 px-3 py-1 text-sm font-semibold text-white" onClick={async () => { await handleAcceptRecommendation(selectedRec.id); setShowRecModal(false); }}>Accetta</button>}
-                      <button className="rounded-md bg-white/20 px-3 py-1 text-sm" onClick={() => setShowRecModal(false)}>Chiudi</button>
+                      {selectedRec.status === 'proposed' && <button className="rounded-md bg-emerald-500 px-3 py-1 text-sm font-semibold text-white" onClick={async () => { await handleAcceptRecommendation(selectedRec.id); setShowRecModal(false); }}>{t.acceptBtn}</button>}
+                      <button className="rounded-md bg-white/20 px-3 py-1 text-sm" onClick={() => setShowRecModal(false)}>{t.closeBtn}</button>
                     </div>
                   </div>
                 </div>
@@ -713,20 +734,20 @@ export default function HomePage() {
                   <div className="relative w-[min(92%,720px)] rounded-2xl bg-white p-6 shadow-lg text-slate-900">
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <h3 className="text-lg font-semibold">Cos'è lo Scheduler?</h3>
-                        <p className="text-sm text-slate-500 mt-1">Breve guida operativa</p>
+                        <h3 className="text-lg font-semibold">{t.schedulerHelpTitle}</h3>
+                        <p className="text-sm text-slate-500 mt-1">{t.schedulerHelpSubtitle}</p>
                       </div>
-                      <button onClick={() => setShowSchedulerHelp(false)} className="text-sm text-slate-500">Chiudi ✕</button>
+                      <button onClick={() => setShowSchedulerHelp(false)} className="text-sm text-slate-500">{t.closeBtn}</button>
                     </div>
 
                     <hr className="my-4" />
                     <div className="space-y-3 text-sm text-slate-700">
-                      <p><strong>Che cosa fa:</strong> lo scheduler esegue periodicamente il "Copilot" per ciascun tenant — cioè lancia la catena LLM che crea sessioni, insight e raccomandazioni automaticamente.</p>
-                      <p><strong>Frequenza:</strong> l'intervallo è configurabile via variabile d'ambiente <code>SCHEDULER_INTERVAL_MIN</code> (default 60 minuti) oppure avviato manualmente con <em>Run once</em>.</p>
-                      <p><strong>Cosa persiste:</strong> ogni esecuzione salva una LLMSession, può generare InsightRecord e più RecommendationRecord nel DB.</p>
-                      <p><strong>Ambito:</strong> lo scheduler itera sui tenant che hanno KPI registrati e lancia il processo per ciascuno; non esegue azioni destructive automaticamente.</p>
-                      <p><strong>Controllo:</strong> usa i pulsanti <em>Start</em>/<em>Stop</em> per abilitare/disabilitare il worker in background o <em>Run once</em> per un'esecuzione immediata.</p>
-                      <p className="text-xs text-slate-500">Nota: puoi disabilitare lo scheduler impostando variabile o fermandolo dalla UI; gli errori sono loggati nel backend.</p>
+                      <p><strong>{lang === 'it' ? 'Che cosa fa:' : 'What it does:'}</strong> {t.schedulerHelpWhat}</p>
+                      <p><strong>{lang === 'it' ? 'Frequenza:' : 'Frequency:'}</strong> {t.schedulerHelpFreq}</p>
+                      <p><strong>{lang === 'it' ? 'Cosa persiste:' : 'What persists:'}</strong> {t.schedulerHelpPersists}</p>
+                      <p><strong>{lang === 'it' ? 'Ambito:' : 'Scope:'}</strong> {t.schedulerHelpScope}</p>
+                      <p><strong>{lang === 'it' ? 'Controllo:' : 'Control:'}</strong> {t.schedulerHelpControl}</p>
+                      <p className="text-xs text-slate-500">{t.schedulerHelpNote}</p>
                     </div>
                     <div className="mt-4 flex justify-end">
                       <button className="rounded-md bg-white/20 px-3 py-1 text-sm" onClick={() => setShowSchedulerHelp(false)}>OK</button>
@@ -740,14 +761,14 @@ export default function HomePage() {
           <section className="grid gap-6 lg:grid-cols-2">
             <div>
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-slate-900">Piani d&apos;azione</h2>
-                <span className="text-xs uppercase text-slate-400">Workflow</span>
+                <h2 className="text-lg font-semibold text-slate-900">{t.plansTitle}</h2>
+                <span className="text-xs uppercase text-slate-400">{t.plansSubtitle}</span>
               </div>
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Piani d'azione</h3>
+                <h3 className="text-sm font-semibold">{t.plansTitle}</h3>
                 <div>
-                  <button className="mr-2 rounded-md bg-white/20 px-3 py-1 text-xs" onClick={() => openNewPlanModal()}>Nuovo piano</button>
-                  <button className="rounded-md bg-white/20 px-3 py-1 text-xs" onClick={() => void handleSchedulerRunOnce()}>Run scheduler (once)</button>
+                  <button className="mr-2 rounded-md bg-white/20 px-3 py-1 text-xs" onClick={() => openNewPlanModal()}>{t.newPlanBtn}</button>
+                  <button className="rounded-md bg-white/20 px-3 py-1 text-xs" onClick={() => void handleSchedulerRunOnce()}>{t.runSchedulerOnceBtn}</button>
                 </div>
               </div>
               <ActionBoard plans={plans} onEdit={openEditPlanModal} />
@@ -757,30 +778,30 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-black/40" onClick={() => setShowPlanModal(false)} />
                   <div className="relative w-[min(90%,680px)] rounded-2xl bg-white p-6 shadow-lg">
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-sm font-semibold text-slate-900">{editingPlan ? 'Modifica piano' : 'Nuovo piano'}</h4>
-                      <button className="text-sm text-slate-500" onClick={() => setShowPlanModal(false)}>Chiudi ✕</button>
+                      <h4 className="text-sm font-semibold text-slate-900">{editingPlan ? t.editPlanTitle : t.newPlanTitle}</h4>
+                      <button className="text-sm text-slate-500" onClick={() => setShowPlanModal(false)}>{t.closeBtn}</button>
                     </div>
                     <div className="space-y-3">
-                      <label className="block text-xs text-slate-600">Raccomandazione</label>
+                      <label className="block text-xs text-slate-600">{t.planRecLabel}</label>
                       <select className="w-full rounded-md border px-2 py-1 text-sm" value={planRecommendationId} onChange={(e) => setPlanRecommendationId(e.target.value)}>
                         {recommendations.map(r => <option key={r.id} value={r.id}>{r.title}</option>)}
                       </select>
 
-                      <label className="block text-xs text-slate-600">Owner</label>
+                      <label className="block text-xs text-slate-600">{t.planOwnerLabel}</label>
                       <input className="w-full rounded-md border px-2 py-1 text-sm" value={planOwner} onChange={(e) => setPlanOwner(e.target.value)} />
 
-                      <label className="block text-xs text-slate-600">Scadenza</label>
+                      <label className="block text-xs text-slate-600">{t.planDueLabel}</label>
                       <input type="date" className="w-full rounded-md border px-2 py-1 text-sm" value={planDueDate} onChange={(e) => setPlanDueDate(e.target.value)} />
 
-                      <label className="block text-xs text-slate-600">Milestones (una per riga)</label>
+                      <label className="block text-xs text-slate-600">{t.planMilestonesLabel}</label>
                       <textarea className="w-full rounded-md border px-2 py-2 text-sm" rows={5} value={planMilestonesText} onChange={(e) => setPlanMilestonesText(e.target.value)} />
 
                       <div className="flex justify-end gap-2">
                         {editingPlan && (
-                          <button className="rounded-md bg-rose-100 text-rose-700 px-3 py-1 text-sm" onClick={async () => setShowDeleteConfirm(true)}>Elimina</button>
+                          <button className="rounded-md bg-rose-100 text-rose-700 px-3 py-1 text-sm" onClick={async () => setShowDeleteConfirm(true)}>{t.deleteBtn}</button>
                         )}
-                        <button className="rounded-md bg-white/20 px-3 py-1 text-sm" onClick={() => setShowPlanModal(false)}>Annulla</button>
-                        <button className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white" onClick={() => void submitPlan()}>Salva piano</button>
+                        <button className="rounded-md bg-white/20 px-3 py-1 text-sm" onClick={() => setShowPlanModal(false)}>{t.cancelBtn}</button>
+                        <button className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white" onClick={() => void submitPlan()}>{t.planSaveBtn}</button>
                       </div>
                     </div>
                   </div>
@@ -792,10 +813,10 @@ export default function HomePage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
                   <div className="absolute inset-0 bg-black/40" onClick={() => setShowDeleteConfirm(false)} />
                   <div className="relative w-[min(90%,420px)] rounded-2xl bg-white p-6 shadow-lg">
-                    <h4 className="text-sm font-semibold">Conferma eliminazione</h4>
-                    <p className="text-sm text-slate-600 mt-2">Sei sicuro di voler eliminare il piano <strong>{editingPlan.recommendation_id}</strong>? Questa azione è irreversibile.</p>
+                    <h4 className="text-sm font-semibold">{t.deleteConfirmTitle}</h4>
+                    <p className="text-sm text-slate-600 mt-2">{t.deleteConfirmPre} <strong>{editingPlan.recommendation_id}</strong>{t.deleteConfirmPost}</p>
                     <div className="mt-4 flex justify-end gap-2">
-                      <button className="rounded-md bg-white/20 px-3 py-1 text-sm" onClick={() => setShowDeleteConfirm(false)}>Annulla</button>
+                      <button className="rounded-md bg-white/20 px-3 py-1 text-sm" onClick={() => setShowDeleteConfirm(false)}>{t.cancelBtn}</button>
                       <button className="rounded-md bg-rose-600 px-4 py-2 text-sm font-semibold text-white" onClick={async () => {
                         try {
                           await deleteActionPlan(editingPlan.id);
@@ -805,9 +826,9 @@ export default function HomePage() {
                           setShowPlanModal(false);
                         } catch (err) {
                           console.error(err);
-                          setError('Eliminazione fallita');
+                          setError(t.errDeletePlan);
                         }
-                      }}>Elimina definitivamente</button>
+                      }}>{t.deleteConfirmBtn}</button>
                     </div>
                   </div>
                 </div>
@@ -820,8 +841,8 @@ export default function HomePage() {
           {llmRun && (
             <section className="rounded-3xl border border-brand-100 bg-white p-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-slate-900">Copilot</h2>
-                <span className="text-xs uppercase text-brand-600">Sessione {llmRun.session_id}</span>
+                <h2 className="text-lg font-semibold text-slate-900">{t.copilotSessionTitle}</h2>
+                <span className="text-xs uppercase text-brand-600">{t.copilotSessionLabel} {llmRun.session_id}</span>
               </div>
               <ol className="mt-4 space-y-3">
                 {llmRun.steps.map((step) => (
@@ -836,5 +857,6 @@ export default function HomePage() {
         </div>
       )}
     </main>
+    </LangContext.Provider>
   );
 }
